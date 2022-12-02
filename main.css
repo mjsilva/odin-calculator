@@ -22,31 +22,31 @@ body {
 }
 
 .calculator {
-  margin-top: 5vh;
+  margin-top: 60px;
   background-color: var(--c-dark-blue);
-  border-radius: 2.5vw;
-  padding: 2vw 1vw;
+  border-radius: 38px;
+  padding: 30px 15px;
   color: var(--c-grey);
-  box-shadow: 3px 2px 2px rgb(32 42 55);
+  box-shadow: 0 1px 15px rgb(32 42 55);
 }
 
 .visor {
-  margin-top: 2vw;
+  margin-top: 30px;
   text-align: right;
 }
 
 .visor .results {
-  font-size: 5vw;
+  font-size: 70px;
   color: #fff;
 }
 
 .visor .operation {
-  font-size: 1.5vw;
-  padding: 1vw;
+  font-size: 23px;
+  padding: 15px;
 }
 
 .keys {
-  margin: 0.9vw;
+  margin: 15px;
   display: flex;
   flex-direction: column;
 }
@@ -55,19 +55,19 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.2vw;
-  margin-top: 1.5vw;
+  gap: 18px;
+  margin-top: 23px;
 }
 
 .key {
-  width: 5vw;
-  height: 4.5vw;
-  font-size: 1.5vw;
+  width: 75px;
+  height: 68px;
+  font-size: 23px;
   display: flex;
   align-items: center;
   justify-content: space-around;
   box-shadow: 0 4px 3px rgb(32 42 55), 0 -3px 3px rgb(47 58 73);
-  border-radius: 1vw;
+  border-radius: 15px;
 }
 
 .key:hover {
