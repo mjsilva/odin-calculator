@@ -38,15 +38,17 @@ body {
 .visor .results {
   font-size: 70px;
   color: #fff;
+  height: 83px;
 }
 
 .visor .operation {
   font-size: 23px;
   padding: 15px;
+  height: 27px;
 }
 
 .keys {
-  margin: 15px;
+  margin: 50px 15px 15px;
   display: flex;
   flex-direction: column;
 }
