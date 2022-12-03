@@ -15,7 +15,7 @@ const handleNumberKeys = (number) => {
 const handleKeyClick = (e) => {
   e.stopPropagation();
   const keyValue = e.currentTarget.innerHTML;
-  const operation = e.currentTarget.classList.contains("operation");
+  const operation = e.currentTarget.classList.contains("operational");
 
   switch (true) {
     case keyValue === "AC":
