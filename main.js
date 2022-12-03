@@ -1,13 +1,66 @@
-let operationsStack = [];
-const MATHS_OPERATIONS = ["+", "-", "×", "÷"];
+const OPERATION_ADDITION_SYMBOL = "+";
+const OPERATION_SUBTRACTION_SYMBOL = "-";
+const OPERATION_MULTIPLICATION_SYMBOL = "×";
+const OPERATION_DIVISION_SYMBOL = "÷";
+const MATHS_OPERATIONS = [
+  OPERATION_ADDITION_SYMBOL,
+  OPERATION_SUBTRACTION_SYMBOL,
+  OPERATION_MULTIPLICATION_SYMBOL,
+  OPERATION_DIVISION_SYMBOL,
+];
+const MATHS_OPERATIONS_PRIORITY = [
+  OPERATION_MULTIPLICATION_SYMBOL,
+  OPERATION_DIVISION_SYMBOL,
+];
 
-const allClear = () => {
-  document.querySelector(".operation").innerHTML = "";
-  document.querySelector(".result").innerHTML = "";
-  operationsStack = [];
+let operationsStack = [];
+
+const calculate = (localOperationsStack) => {
+  for (const [index, value] of localOperationsStack.entries()) {
+    if (!MATHS_OPERATIONS.includes(value)) {
+      continue;
+    }
+
+    // if this operation is not a priority operation and there's still
+    // some priority operations in localOperationsStack move on
+    if (
+      localOperationsStack.some((v) => MATHS_OPERATIONS_PRIORITY.includes(v)) &&
+      !MATHS_OPERATIONS_PRIORITY.includes(value)
+    ) {
+      continue;
+    }
+
+    const operationResult = calculateOperation(
+      localOperationsStack[index - 1],
+      localOperationsStack[index + 1],
+      value
+    );
+
+    // index - 1 because we want the splice to start from the value before operation
+    // example if we have ["2", "+", "5"] we want the splice to start from "2" not "+"
+    localOperationsStack.splice(index - 1, 3, operationResult);
+    break;
+  }
+
+  if (localOperationsStack.length > 1) {
+    calculate(localOperationsStack);
+  }
+
+  return localOperationsStack;
 };
 
-const calculateAndUpdateResult = () => {};
+const calculateOperation = (num1, num2, operation) => {
+  switch (operation) {
+    case OPERATION_MULTIPLICATION_SYMBOL:
+      return +num1 * +num2;
+    case OPERATION_DIVISION_SYMBOL:
+      return +num1 / +num2;
+    case OPERATION_ADDITION_SYMBOL:
+      return +num1 + +num2;
+    case OPERATION_SUBTRACTION_SYMBOL:
+      return +num1 - +num2;
+  }
+};
 
 const processCalculatorLogic = (userOperationValue) => {
   // no more than one operation symbol
@@ -55,6 +108,12 @@ const updateVisorResultsElementBaseOnOperationStack = () => {
   el.innerHTML = operationsStack.join("");
 };
 
+const allClear = () => {
+  document.querySelector(".operation").innerHTML = "";
+  document.querySelector(".result").innerHTML = "";
+  operationsStack = [];
+};
+
 const clearLastDigit = () => {
   const el = document.querySelector(".operation");
   el.innerHTML = el.innerHTML.substring(0, el.innerHTML.length - 1);
@@ -84,6 +143,9 @@ const handleKeyClick = (e) => {
       break;
     case MATHS_OPERATIONS.includes(keyValue): // it's mathematical operation
       handleMathsOperation(keyValue);
+      break;
+    case keyValue === "=":
+      calculate(operationsStack);
       break;
   }
   console.log("e.currentTarget.innerHTML", e.currentTarget.innerHTML);
