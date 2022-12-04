@@ -5,10 +5,11 @@ Another Odin project using pure html, css and JS.
 # How to run in
 
 1. Clone this repo
-2. Double click on index.html
+2. Double-click on index.html
 
 **alternatively**
-Click [here](https://github.com/mjsilva/odin-calculator)
+
+Click [here](https://mjsilva.github.io/odin-calculator/)
 
 # License
 
