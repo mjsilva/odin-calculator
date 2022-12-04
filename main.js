@@ -13,9 +13,12 @@ const MATHS_OPERATIONS_PRIORITY = [
   OPERATION_DIVISION_SYMBOL,
 ];
 
-let operationsStack = [];
+let globalOperationsStack = [];
 
-const calculate = (localOperationsStack) => {
+const calculate = (operationStack) => {
+  // clone operationStack to avoid mutation
+  const localOperationsStack = [...operationStack];
+
   for (const [index, value] of localOperationsStack.entries()) {
     if (!MATHS_OPERATIONS.includes(value)) {
       continue;
@@ -43,10 +46,11 @@ const calculate = (localOperationsStack) => {
   }
 
   if (localOperationsStack.length > 1) {
-    calculate(localOperationsStack);
+    return calculate(localOperationsStack);
   }
 
-  return localOperationsStack;
+  // return the remaining value
+  return localOperationsStack.pop();
 };
 
 const calculateOperation = (num1, num2, operation) => {
@@ -62,14 +66,13 @@ const calculateOperation = (num1, num2, operation) => {
   }
 };
 
-const processCalculatorLogic = (userOperationValue) => {
+const processCalculatorLogic = (userInputValue) => {
   // no more than one operation symbol
   // if an operation symbol already exists replace the last one
-  const lastValue = operationsStack.slice(-1)[0];
-  const currentValueIsAnOperation =
-    MATHS_OPERATIONS.includes(userOperationValue);
+  const lastValue = globalOperationsStack.slice(-1)[0];
+  const currentValueIsAnOperation = MATHS_OPERATIONS.includes(userInputValue);
   const lastValueWasAnOperation = MATHS_OPERATIONS.includes(lastValue);
-  let valueToInsert = userOperationValue;
+  let valueToInsert = userInputValue;
 
   // REPLACE SYMBOL IF PREVIOUS EXISTS
   // remove last value and replace it with the new one if
@@ -77,59 +80,72 @@ const processCalculatorLogic = (userOperationValue) => {
   // example: if a user previously clicked on "+" and then on "*"
   // "+" should be replaced by "*"
   if (lastValueWasAnOperation && currentValueIsAnOperation) {
-    operationsStack.pop();
-    valueToInsert = userOperationValue;
-    updateOperationsStackAndVisor(valueToInsert);
-    return;
+    globalOperationsStack.pop();
+    valueToInsert = userInputValue;
   }
-
   // APPEND NUMBER TO STACK
   // if value is a number and last value was a number too instead of adding
   // a new index on the array just append the new number to old number
-  if (!lastValueWasAnOperation && !currentValueIsAnOperation) {
-    valueToInsert = operationsStack.length
-      ? operationsStack.pop() + userOperationValue
-      : userOperationValue;
-    updateOperationsStackAndVisor(valueToInsert);
-    return;
+  else if (!lastValueWasAnOperation && !currentValueIsAnOperation) {
+    valueToInsert = globalOperationsStack.length
+      ? globalOperationsStack.pop() + userInputValue
+      : userInputValue;
   }
 
   updateOperationsStackAndVisor(valueToInsert);
+  if (
+    globalOperationsStack.length > 1 &&
+    globalOperationsStack.length % 2 !== 0
+  ) {
+    updateResultVisor(calculate(globalOperationsStack));
+  }
+};
+
+const updateResultVisor = (value) => {
+  const el = document.querySelector(".result");
+  el.innerHTML = value;
 };
 
 const updateOperationsStackAndVisor = (value) => {
-  operationsStack.push(value);
+  globalOperationsStack.push(value);
   updateVisorResultsElementBaseOnOperationStack();
-  console.log("operationsStack", operationsStack);
 };
 
 const updateVisorResultsElementBaseOnOperationStack = () => {
   const el = document.querySelector(".operation");
-  el.innerHTML = operationsStack.join("");
+  el.innerHTML = globalOperationsStack.join("");
 };
 
 const allClear = () => {
   document.querySelector(".operation").innerHTML = "";
   document.querySelector(".result").innerHTML = "";
-  operationsStack = [];
+  globalOperationsStack = [];
 };
 
 const clearLastDigit = () => {
   const el = document.querySelector(".operation");
+  if (!el.innerHTML.length) {
+    return;
+  }
   el.innerHTML = el.innerHTML.substring(0, el.innerHTML.length - 1);
-  operationsStack.pop();
+
+  const lastValue = globalOperationsStack.pop();
+  const lastValueMinusLastChar = lastValue.substring(0, lastValue.length - 1);
+
+  if (lastValueMinusLastChar) {
+    globalOperationsStack.push(lastValueMinusLastChar);
+    updateResultVisor(calculate(globalOperationsStack));
+  }
 };
-const handleNumberKeys = (number) => {
-  processCalculatorLogic(number);
-};
-const handleMathsOperation = (operationSymbol) => {
-  processCalculatorLogic(operationSymbol);
-};
+
 // even binding
 const handleKeyClick = (e) => {
   e.stopPropagation();
   const keyValue = e.currentTarget.innerHTML;
-  const operation = e.currentTarget.classList.contains("operational");
+
+  if (!keyValue) {
+    return;
+  }
 
   switch (true) {
     case keyValue === "AC":
@@ -138,17 +154,14 @@ const handleKeyClick = (e) => {
     case keyValue === "⌫":
       clearLastDigit();
       break;
-    case operation === false: // it's a number
-      handleNumberKeys(keyValue);
-      break;
-    case MATHS_OPERATIONS.includes(keyValue): // it's mathematical operation
-      handleMathsOperation(keyValue);
-      break;
     case keyValue === "=":
-      calculate(operationsStack);
+      const val = calculate(globalOperationsStack);
+      allClear();
+      updateOperationsStackAndVisor(val);
       break;
+    default:
+      processCalculatorLogic(keyValue);
   }
-  console.log("e.currentTarget.innerHTML", e.currentTarget.innerHTML);
 };
 [...document.querySelectorAll(".key")].forEach((el) => {
   el.addEventListener("click", handleKeyClick);
