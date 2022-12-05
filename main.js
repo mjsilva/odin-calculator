@@ -115,10 +115,15 @@ const processCalculatorLogic = (userInputValue) => {
   }
 };
 
+const roundNumber = (number, decimalPlaces = 2) => {
+  const roundedNumber = number.toFixed(decimalPlaces);
+  return Number.parseFloat(roundedNumber).toString();
+};
+
 const updateResultVisor = (value) => {
   const el = document.querySelector(".result");
-  el.innerHTML = value;
-  reduceFontSizeToFit(value, el);
+  el.innerHTML = roundNumber(value);
+  reduceFontSizeToFit(el.innerHTML, el);
 };
 
 const updateOperationsStackAndVisor = (value) => {
@@ -215,7 +220,7 @@ const handleKeyClick = (e) => {
       clearLastDigit();
       break;
     case keyValue === "=":
-      const val = calculate(globalOperationsStack);
+      const val = roundNumber(calculate(globalOperationsStack));
       allClear();
       updateOperationsStackAndVisor(val);
       break;
