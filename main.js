@@ -74,7 +74,17 @@ const processCalculatorLogic = (userInputValue) => {
   const lastValueWasAnOperation = MATHS_OPERATIONS.includes(lastValue);
   let valueToInsert = userInputValue;
 
-  // REPLACE SYMBOL IF PREVIOUS EXISTS
+  // handle duplicated decimal point
+  const currentValueIsDecimalPoint = userInputValue === ".";
+  const lastValueContainsDecimalPoint = lastValue && lastValue.includes(".");
+  if (
+    currentValueIsDecimalPoint &&
+    (lastValueContainsDecimalPoint || lastValueWasAnOperation)
+  ) {
+    return;
+  }
+
+  // REPLACE MATH SYMBOL IF PREVIOUS EXISTS
   // remove last value and replace it with the new one if
   // last value is an operation symbol
   // example: if a user previously clicked on "+" and then on "*"
@@ -83,6 +93,7 @@ const processCalculatorLogic = (userInputValue) => {
     globalOperationsStack.pop();
     valueToInsert = userInputValue;
   }
+
   // APPEND NUMBER TO STACK
   // if value is a number and last value was a number too instead of adding
   // a new index on the array just append the new number to old number
@@ -93,6 +104,9 @@ const processCalculatorLogic = (userInputValue) => {
   }
 
   updateOperationsStackAndVisor(valueToInsert);
+
+  // check for odd number of elements that means there's even pairs of numbers
+  // with operation in the middle
   if (
     globalOperationsStack.length > 1 &&
     globalOperationsStack.length % 2 !== 0
@@ -104,6 +118,7 @@ const processCalculatorLogic = (userInputValue) => {
 const updateResultVisor = (value) => {
   const el = document.querySelector(".result");
   el.innerHTML = value;
+  reduceFontSizeToFit(value, el);
 };
 
 const updateOperationsStackAndVisor = (value) => {
@@ -111,9 +126,54 @@ const updateOperationsStackAndVisor = (value) => {
   updateVisorResultsElementBaseOnOperationStack();
 };
 
+/**
+ * Uses canvas.measureText to compute and return the width of the given text of given font in pixels.
+ *
+ * @param {String} text The text to be rendered.
+ * @param {String} font The css font descriptor that text is to be rendered with (e.g. "bold 14px verdana").
+ *
+ * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
+ */
+function getTextWidth(text, font) {
+  // re-use canvas object for better performance
+  const canvas =
+    getTextWidth.canvas ||
+    (getTextWidth.canvas = document.createElement("canvas"));
+  const context = canvas.getContext("2d");
+  context.font = font;
+  const metrics = context.measureText(text);
+  return metrics.width;
+}
+
+function getCssStyle(element, prop) {
+  return window.getComputedStyle(element, null).getPropertyValue(prop);
+}
+
+function getCanvasFont(el = document.body) {
+  const fontWeight = getCssStyle(el, "font-weight") || "normal";
+  const fontSize = getCssStyle(el, "font-size") || "16px";
+  const fontFamily = getCssStyle(el, "font-family") || "Times New Roman";
+
+  return `${fontWeight} ${fontSize} ${fontFamily}`;
+}
+
+const reduceFontSizeToFit = (text, element, factorPercentage = 8) => {
+  const textWidth = getTextWidth(element.innerHTML, getCanvasFont(element));
+  const fontSize = window
+    .getComputedStyle(element, null)
+    .getPropertyValue("font-size");
+
+  if (textWidth + 10 > element.offsetWidth) {
+    const newFontSize =
+      parseFloat(fontSize) - parseFloat(fontSize) * (factorPercentage / 100);
+    element.style.fontSize = newFontSize + "px";
+  }
+};
+
 const updateVisorResultsElementBaseOnOperationStack = () => {
   const el = document.querySelector(".operation");
   el.innerHTML = globalOperationsStack.join("");
+  reduceFontSizeToFit(el.innerHTML, el, 20);
 };
 
 const allClear = () => {
